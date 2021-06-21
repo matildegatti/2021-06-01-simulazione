@@ -5,8 +5,10 @@
 package it.polito.tdp.genes;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.genes.model.Adiacenze;
 import it.polito.tdp.genes.model.Genes;
 import it.polito.tdp.genes.model.Model;
 import javafx.event.ActionEvent;
@@ -30,7 +32,7 @@ public class FXMLController {
     private Button btnCreaGrafo; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbGeni"
-    private ComboBox<?> cmbGeni; // Value injected by FXMLLoader
+    private ComboBox<Genes> cmbGeni; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnGeniAdiacenti"
     private Button btnGeniAdiacenti; // Value injected by FXMLLoader
@@ -46,19 +48,58 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	this.txtResult.clear();
     	
-
+    	this.model.creaGrafo();
+    	
+    	this.cmbGeni.getItems().addAll(this.model.listVertici());
+    	this.txtResult.setText("Grafo creato con: "+this.model.nVertici()+" vertici e "+this.model.nArchi()+" archi.");
     }
 
     @FXML
     void doGeniAdiacenti(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	Genes g=this.cmbGeni.getValue();
+    	if(g==null) {
+    		this.txtResult.setText("Selezionare prima un gene di partenza");
+    		return;
+    	}
     	
+    	List<Adiacenze> result=this.model.geniAdiacenti(g);
+    	this.txtResult.appendText("Geni adiacenti a "+g.getGeneId()+"\n \n");
+    	for(Adiacenze a:result) {
+    		this.txtResult.appendText(a.getG2().getGeneId()+" - "+a.getPeso()+"\n");
+    	}
     }
 
     @FXML
     void doSimula(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	
+    	if(this.model.getGrafo()==false) {
+    		this.txtResult.setText("Creare prima il grafo");
+    		return;
+    	}
+    	
+    	Genes g=this.cmbGeni.getValue();
+    	if(g==null) {
+    		this.txtResult.setText("Selezionare prima un gene di partenza");
+    		return;
+    	}
+    	
+    	int n;
+    	try {
+    		n=Integer.parseInt(this.txtIng.getText());
+    	}catch(NumberFormatException e) {
+    		this.txtResult.setText("Inserire un numero intero di ingegneri");
+    		return;
+    	}
+    	
+    	this.model.simula(g,n);
+    	for(Genes geni:this.model.getGeniStudiati().keySet()) {
+    		this.txtResult.appendText(geni+"  "+this.model.getGeniStudiati().get(geni)+"\n");
+    	}
+    	
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
